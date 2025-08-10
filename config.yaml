@@ -1,0 +1,66 @@
+app:
+  name: some-agent
+  port: 5000
+  debug: false
+  gunicorn_workers: 4
+api:
+  grok:
+    url: https://api.groq.com/openai/v1/chat/completions
+    model: llama3-70b-8192
+    timeout: 30
+    retry_attempts: 3
+    default_prompt: You are a persuasive sales agent for a DTC product brand.
+    fallback_response: Our team is here to help you find your perfect fit. Could you tell me what you're shopping for today?
+    error_response: Sorry, I’m having trouble pulling up our product options. Please try again soon.
+  huggingface:
+    model: j-hartmann/emotion-english-distilroberta-base
+    timeout: 10
+    retry_attempts: 3
+    fallback_emotion: unknown
+    base_persona: You are an expert, friendly, emotionally intelligent sales agent. You understand user emotion and respond with persuasive messages.
+    persuasive_styles:
+      joy: Celebrate their excitement, and anchor it to your product.
+      sadness: Be empathetic and show how this product can bring comfort.
+      anger: Stay calm, offer solutions, and make them feel understood.
+      fear: Reduce uncertainty, emphasize safety, and promise a better outcome.
+      surprise: Fuel their curiosity and reveal something unexpected.
+      disgust: Acknowledge concerns and redirect to better alternatives.
+      neutral: Use logic with a slight emotional appeal.
+      unknown: Use a friendly, neutral pitch.
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+  cache_ttl_minutes: 10
+postgres:
+  host: localhost
+  port: 5000
+  dbname: some_agent
+  user: postgres
+logging:
+  level: INFO
+  file: ./some-agent.log
+rl:
+  arms:
+    fomo: Highlight limited stock and urgency naturally.
+    empathy: Be empathetic, show how the product brings comfort.
+    logic: Use logical arguments with slight emotional appeal.
+    social_proof: Mention what others love about this product.
+  default_strategy: Use a friendly, neutral pitch.
+  positive_keywords:
+    - great
+    - perfect
+    - awesome
+memory:
+  knowledge_graph:
+    entity_table: user_preferences
+    max_entities_per_user: 50
+    entity_ttl_days: 30
+  memory_module:
+    redis_prefix: "memory:"
+    max_memories_per_user: 100
+    recency_weight: 0.7
+    frequency_weight: 0.3
+  routing_agent:
+    context_window: 5
+    min_confidence_threshold: 0.6
