@@ -1,7 +1,9 @@
+
+import sys
 import asyncio
 import uuid
-from utils import validate_env_vars, logger
-from graph_builder import build_graph
+from utils.utils import validate_env_vars, logger, config_path
+from src.graph_builder import build_graph
 
 async def main():
     try:

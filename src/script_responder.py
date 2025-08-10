@@ -5,9 +5,12 @@ import redis
 import aiohttp
 from retry import retry
 from rl_learner import get_rl_strategy
-from utils import get_db_connection, logger
+from utils.utils import get_db_connection, logger, config_path
+import os
 
-with open("config.yaml", "r") as f:
+config_path = os.path.abspath(config_path)
+
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
 redis_client = redis.Redis(

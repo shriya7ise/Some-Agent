@@ -1,9 +1,11 @@
 import redis
 import yaml
 import numpy as np
-from utils import logger
+from utils.utils import logger, config_path
+import os
 
-with open("config.yaml", "r") as f:
+
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
 redis_client = redis.Redis(

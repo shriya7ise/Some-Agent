@@ -1,12 +1,14 @@
 import yaml
 import redis
 from langgraph.graph import StateGraph
-from agent_state import AgentState
-from emotion_detector import detect_emotion
-from script_responder import get_response
-from utils import get_db_connection, logger
+from src.agent_state import AgentState
+from src.emotion_detector import detect_emotion
+from src.script_responder import get_response
+from utils.utils import get_db_connection, logger, config_path
+import sys
+import os
 
-with open("config.yaml", "r") as f:
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
 redis_client = redis.Redis(
@@ -21,7 +23,6 @@ def emotion_node(state: AgentState) -> AgentState:
     state["emotion_confidence"] = confidence
     state["entities"] = entities
 
-    # Save entities to Knowledge Graph
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             for entity_type, entity_value in entities:
@@ -40,12 +41,10 @@ def emotion_node(state: AgentState) -> AgentState:
     return state
 
 def memory_node(state: AgentState) -> AgentState:
-    # Fetch recent interactions from Memory Module
     memory_key = f"{config['memory']['memory_module']['redis_prefix']}{state['user_id']}"
     recent_memories = redis_client.lrange(memory_key, 0, config['memory']['routing_agent']['context_window'] - 1)
     state["recent_memories"] = [m.decode().split(":")[1:] for m in recent_memories]  # [emotion, strategy]
 
-    # Fetch entities from Knowledge Graph
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -69,9 +68,8 @@ async def response_node(state: AgentState) -> AgentState:
     )
     state["response"] = response
     state["strategy"] = strategy
-    state["output"] = response  # Set output for main.py compatibility
+    state["output"] = response
 
-    # Save to Memory Module
     memory_key = f"{config['memory']['memory_module']['redis_prefix']}{state['user_id']}"
     redis_client.lpush(memory_key, f"{state['chat_id']}:{state['emotion']}:{strategy}")
     redis_client.ltrim(memory_key, 0, config['memory']['memory_module']['max_memories_per_user'] - 1)

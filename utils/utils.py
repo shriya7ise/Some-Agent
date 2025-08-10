@@ -4,11 +4,18 @@ import yaml
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+import os
 
-# Load environment variables from .env file
+config_path = os.path.join(
+    os.path.dirname(__file__),  
+    "..", 
+    "config",
+    "config.yaml"
+)
+config_path = os.path.abspath(config_path)
 load_dotenv()
 
-with open("config.yaml", "r") as f:
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
 # Initialize logging
@@ -39,3 +46,10 @@ def validate_env_vars():
     if missing:
         logger.error(f"Missing environment variables: {', '.join(missing)}")
         raise ValueError(f"Missing environment variables: {', '.join(missing)}")
+    
+import os
+
+def get_config_path():
+    return os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "config", "config.yaml")
+    )

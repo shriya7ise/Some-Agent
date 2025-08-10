@@ -1,7 +1,8 @@
 from celery import Celery
-from utils import logger
+from utils.utils import logger, config_path
+import yaml
 
-with open("config.yaml", "r") as f:
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
 celery_app = Celery(

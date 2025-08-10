@@ -5,9 +5,12 @@ import torch
 from transformers import pipeline
 from retry import retry
 import spacy
-from utils import logger
+from utils.utils import logger, config_path
+import os
 
-with open("config.yaml", "r") as f:
+config_path = os.path.abspath(config_path)
+
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
 redis_client = redis.Redis(
@@ -23,8 +26,8 @@ nlp = pipeline(
     "text-classification",
     model=config["api"]["huggingface"]["model"],
     tokenizer=config["api"]["huggingface"]["model"],
-    top_k=None,  # Replaced return_all_scores=True
-    device=device  # Use GPU if available
+    top_k=None,
+    device=device 
 )
 spacy_nlp = spacy.load("en_core_web_sm")
 
